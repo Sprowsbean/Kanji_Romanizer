@@ -1,70 +1,27 @@
-#Import dictionary kanji to romanized readings and one that evaulate to english words
+import json 
+    
+with open('JMdict.json', 'r',encoding='utf-8') as f:
+    dictionary_data = json.load(f)
 
+words = dictionary_data.get("words",[])
 
-#Prompt user for kanji input
+## this function takes in values or items of words list ,that have that specific id, after that it print kanji text, so we get to the current item
+#item with specific id 
+user_input = input("Initialize a kanji: ")
 
-#put that prompt into a list of kanji characters if user input sentence
-
-#THe input will be force be checked by kanji dictionary to see if it exist
-
-#If it exist, then it will be converted to romanized reading + english meaning
-
-#return user the romanized reading + english meaning
-
-import xml.etree.ElementTree as ET
-
-# 1️⃣ Parse the JMdict XML
-tree = ET.parse("data/JMdict.xml")
-root = tree.getroot()
-
-# 2️⃣ Build dictionary: keb -> (reb, gloss)
-kanji_dict = {}
-
-# For demo purposes, limit to first 50 entries
-count = 0
-MAX_ENTRIES = 50
-
-for entry in root.findall("entry"):
-    if count >= MAX_ENTRIES:
+for values in words:
+    kanji_list = values.get("kanji", [])
+    
+    
+    if kanji_list and user_input == kanji_list[0]["text"]:
+        
+        first_step = values["sense"][0]
+        second_step = first_step["gloss"][0]
+        eng_meaning = second_step["text"]
+        
+        print("Eng meaning: {}, kana: {}".format(eng_meaning, values["kana"][0]["text"]))
         break
-
-    # Extract first <keb> (kanji)
-    k_ele = entry.find("k_ele")
-    if k_ele is None:
-        continue  # skip kana-only words
-    keb_elem = k_ele.find("keb")
-    if keb_elem is None:
-        continue
-    keb = keb_elem.text
-
-    # Extract first <reb> (reading in kana)
-    r_ele = entry.find("r_ele")
-    if r_ele is None:
-        continue
-    reb_elem = r_ele.find("reb")
-    if reb_elem is None:
-        continue
-    reb = reb_elem.text
-
-    # Extract first <gloss> (English meaning)
-    sense = entry.find("sense")
-    if sense is None:
-        continue
-    gloss_elem = sense.find("gloss")
-    if gloss_elem is None:
-        continue
-    gloss = gloss_elem.text
-
-    # Add to dictionary
-    kanji_dict[keb] = (reb, gloss)
-    count += 1
-
-# 3️⃣ Prompt user for kanji input
-user_input = input("Enter kanji characters: ")
-
-# 4️⃣ Lookup and return reading + meaning
-if user_input in kanji_dict:
-    reading, meaning = kanji_dict[user_input]
-    print(f"Reading (kana): {reading}, Meaning: {meaning}")
 else:
-    print("Kanji not found in dictionary.")
+    print("This word is not in the dictionary")
+
+    #sense , gloss , lang eng text
